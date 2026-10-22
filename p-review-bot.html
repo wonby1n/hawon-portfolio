@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>코드 리뷰 봇 — 조하원</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&family=Inter:wght@500;600;700&display=swap">
+<style>:root{--accent:#0071e3}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#2997ff}}:root[data-theme="dark"]{--accent:#2997ff}
+/* Layout: 애플 제품 상세 페이지 흐름 — 상단 탭바, 히어로 카드, 숫자 띠, 문제 패널, 화면 레일, 역할 카드, 진단 아코디언, 스택, 이전/다음 */
+:root{
+  --bg:#ffffff; --panel:#f5f5f7; --card:#ffffff; --fg:#1d1d1f; --sub:#6e6e73; --line:#d2d2d7; --chip:#e8e8ed; --link:#0066cc; --bar:rgba(255,255,255,.78);
+  --f-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --f-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --f-num:"Inter",-apple-system,"SF Pro Display",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--panel:#161617;--card:#1d1d1f;--fg:#f5f5f7;--sub:#a1a1a6;--line:#424245;--chip:#2c2c2e;--link:#2997ff;--bar:rgba(22,22,23,.8);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--panel:#161617;--card:#1d1d1f;--fg:#f5f5f7;--sub:#a1a1a6;--line:#424245;--chip:#2c2c2e;--link:#2997ff;--bar:rgba(22,22,23,.8);color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;word-break:keep-all}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bar)}
+img{max-width:100%;display:block}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);margin:0;letter-spacing:-.02em;text-wrap:balance}
+.sec{padding-block:44px}
+.sec.tight{padding-block:8px 20px}
+.sec h2{font-size:clamp(30px,4.4vw,48px);font-weight:800;line-height:1.12;margin-bottom:28px}
+.more::after{content:" ›"}
+
+/* bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.bar-in{display:flex;align-items:center;gap:20px;height:52px}
+.home{font-weight:700;color:var(--fg);white-space:nowrap;font-size:15px}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1;justify-content:flex-end}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;font-size:13px;padding:6px 12px;border-radius:999px;color:var(--fg)}
+.tab:hover{text-decoration:none;background:var(--chip)}
+.tab.on{background:var(--fg);color:var(--bg)}
+
+/* hero */
+.hero{padding-block:24px 8px}
+.hero-card{background:var(--panel);border-radius:28px;padding:clamp(28px,5vw,64px);display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center}
+.kicker{font-size:14px;font-weight:700;color:var(--accent)}
+.hero h1{font-size:clamp(44px,7vw,80px);font-weight:800;line-height:1.02;margin-top:8px}
+.tagline{font:700 clamp(22px,2.8vw,30px)/1.3 var(--f-display);letter-spacing:-.015em;margin:14px 0 0}
+.summary{margin:18px 0 0;color:var(--sub);max-width:36em}
+.links{margin-top:18px;font-size:16px}
+.note{color:var(--sub);font-size:14px}
+.logo-plate{background:#fff;border-radius:24px;aspect-ratio:4/3;display:grid;place-items:center;padding:12%;box-shadow:0 10px 30px -18px rgba(0,0,0,.35)}
+.logo-plate img{max-height:100%;width:auto;object-fit:contain}
+.glyph{aspect-ratio:4/3;border-radius:24px;background:var(--card);display:flex;align-items:flex-end;justify-content:center;gap:8%;padding:12% 12% 0;overflow:hidden}
+.glyph i{flex:1;border-radius:14px 14px 0 0;background:var(--accent);opacity:calc(.35 + var(--d)*.15);height:calc(40% + var(--d)*12%)}
+.meta{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;border-top:1px solid var(--line);padding-top:24px}
+.m{display:flex;flex-direction:column;gap:2px;min-width:0}
+.m span{font-size:13px;color:var(--sub)}
+.m b{font-size:16px;font-weight:600}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px}
+.st{background:var(--panel);border-radius:22px;padding:22px 24px}
+.st b{display:block;font:700 clamp(34px,4vw,44px)/1 var(--f-num);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--accent)}
+.st b small{font:600 15px var(--f-body);color:var(--sub);margin-left:4px;letter-spacing:0}
+.st span{display:block;margin-top:8px;font-size:14px;color:var(--sub)}
+
+/* problem */
+.problem{background:var(--panel);border-radius:28px;padding:clamp(28px,5vw,64px)}
+.pk{font-size:13px;font-weight:700;color:var(--sub);letter-spacing:.04em;margin-bottom:12px}
+.problem h2{margin-bottom:18px}
+.problem p{margin:0;max-width:40em;font-size:18px;line-height:1.75}
+.flow{list-style:none;margin:32px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:10px;counter-reset:f}
+.flow li{flex:1 1 160px;background:var(--card);border-radius:18px;padding:16px 18px;position:relative;counter-increment:f;min-width:0}
+.flow li::before{content:counter(f);font:700 12px var(--f-num);color:var(--accent);display:block;margin-bottom:6px}
+.flow b{display:block;font-size:16px}
+.flow span{font-size:14px;color:var(--sub)}
+.feats{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.feats span{background:var(--card);border-radius:999px;padding:9px 15px;font-size:14px;font-weight:500}
+
+/* screens */
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:24px}
+.head h2{margin:0}
+.rail-nav{display:flex;gap:12px}
+.rn{width:40px;height:40px;border-radius:50%;border:0;background:var(--chip);color:var(--fg);font-size:20px;cursor:pointer}
+.rail-wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px))}
+.rail{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px max(16px,env(safe-area-inset-right,0px)) 16px 0;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.shot{flex:0 0 min(620px,86%);scroll-snap-align:start;margin:0}
+.shot img{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:22px;background:var(--panel);border:1px solid var(--line)}
+.shot figcaption{margin-top:12px;font-size:15px;font-weight:500}
+
+/* roles */
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.role{background:var(--panel);border-radius:24px;padding:28px;min-width:0}
+.role h3{font-size:22px;font-weight:800;margin-bottom:14px}
+.role ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+.role li{display:flex;gap:10px;font-size:15.5px;line-height:1.6}
+.role li::before{content:"";flex:0 0 6px;height:6px;border-radius:50%;background:var(--accent);margin-top:10px}
+
+/* stories */
+.stories{background:var(--panel);border-radius:28px;padding:8px clamp(20px,4vw,48px)}
+.st-item{border-bottom:1px solid var(--line)}
+.st-item:last-child{border-bottom:0}
+.st-btn{width:100%;background:none;border:0;color:var(--fg);display:flex;justify-content:space-between;align-items:center;gap:16px;padding:26px 0;cursor:pointer;text-align:left;font:800 clamp(20px,2.4vw,26px)/1.3 var(--f-display);letter-spacing:-.02em}
+.chev{flex:0 0 auto;width:13px;height:13px;border-right:2.5px solid var(--sub);border-bottom:2.5px solid var(--sub);transform:rotate(45deg) translate(-3px,-3px);transition:transform .25s}
+.st-btn[aria-expanded="true"] .chev{transform:rotate(-135deg) translate(-3px,-3px)}
+.st-panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding-bottom:28px}
+.st-panel[hidden]{display:none}
+.step{background:var(--card);border-radius:18px;padding:18px 20px;min-width:0}
+.step span{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
+.step.r span{color:var(--accent)}
+.step p{margin:0;font-size:15.5px;line-height:1.65}
+
+/* stack */
+.stack{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.sk{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:18px 0;border-bottom:1px solid var(--line);align-items:start}
+.sk b{font-size:15px;padding-top:5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 13px/1 var(--f-num);background:var(--chip);padding:8px 11px;border-radius:999px}
+
+/* prev/next */
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pcard{background:var(--panel);border-radius:22px;padding:24px 26px;color:var(--fg);display:flex;flex-direction:column;gap:4px;min-width:0}
+.pcard:hover{text-decoration:none;background:var(--chip)}
+.pcard span{font-size:13px;color:var(--sub)}
+.pcard b{font:800 22px/1.25 var(--f-display);letter-spacing:-.02em}
+.pcard.r{text-align:right}
+.foot{color:var(--sub);font-size:12px;padding-block:24px 48px}
+
+@media (max-width:820px){
+  .hero-card{grid-template-columns:1fr}
+  .meta{grid-template-columns:1fr}
+  .sk{grid-template-columns:1fr;gap:8px}
+}
+@media (max-width:520px){
+  .pn{grid-template-columns:1fr}
+  .pcard.r{text-align:left}
+  .home{font-size:14px}
+  .head .rail-nav{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* evidence */
+.ev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:16px;margin-top:16px}
+.ev{background:var(--panel);border-radius:24px;padding:26px;min-width:0}
+.ev h3{font-size:19px;font-weight:800;margin-bottom:6px}
+.ev .src{font-size:13px;color:var(--sub);margin:0 0 14px}
+.ev pre{margin:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+.ev pre .c{color:var(--sub)}
+.ev pre .k{color:var(--accent);font-weight:600}
+.wf{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.wf .n{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:13.5px;line-height:1.35}
+.wf .n small{display:block;color:var(--sub);font-size:11.5px}
+.wf .n.ai{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.wf .ar{color:var(--sub);font-size:14px}
+.wf-sub{display:flex;gap:8px;margin:10px 0 0 0;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+.wf-sub .n{background:var(--card);border:1px dashed var(--accent);border-radius:12px;padding:6px 10px;color:var(--fg)}
+</style></head><body>
+<header class="bar"><div class="wrap bar-in"><a class="home" href="index.html">‹ 조하원</a><nav class="tabs" aria-label="프로젝트"><a class="tab on" href="p-review-bot.html" aria-current="page">Review Bot</a><a class="tab" href="p-ssakit.html">교보재 플랫폼</a><a class="tab" href="p-glucoach.html">GluCoach</a><a class="tab" href="p-care.html">CARe</a><a class="tab" href="p-awards.html">수상</a></nav></div></header>
+
+<section class="hero"><div class="wrap"><div class="hero-card">
+  <div class="hero-txt">
+    <div class="kicker">실습코치 업무 · 직접 설계하고 운영</div>
+    <h1>코드 리뷰 봇</h1>
+    <p class="tagline">Merge Request가 열리면<br>10~20초 안에 첫 리뷰가 달려요.</p>
+    <p class="summary">교육생이 GitLab에 Merge Request를 올리면 n8n AI Agent가 diff를 읽고 리뷰 코멘트를 남긴 뒤 Mattermost로 알려주는 자동화예요. 반복되는 1차 리뷰는 봇이 맡고, 코치는 설계와 구조 피드백에 시간을 쓰도록 만들었어요.</p>
+    <div class="links"><span class="note">사내 GitLab에서 운영 중이라 저장소는 비공개예요.</span></div>
+  </div>
+  <div class="glyph" aria-hidden="true"><i style="--d:0"></i><i style="--d:1"></i><i style="--d:2"></i><i style="--d:3"></i><i style="--d:4"></i></div>
+  <div class="meta"><div class="m"><span>형태</span><b>1인 설계 · 구축 · 운영</b></div><div class="m"><span>적용</span><b>실습코치 담당 교육생 팀</b></div><div class="m"><span>시작</span><b>교육생 시절 내 팀 저장소</b></div></div>
+</div></div></section>
+
+<section class="sec tight"><div class="wrap"><div class="stats"><div class="st"><b>20<small>개 팀</small></b><span>적용 팀</span></div><div class="st"><b>120<small>명</small></b><span>교육생</span></div><div class="st"><b>1,000+<small>건</small></b><span>누적 리뷰</span></div><div class="st"><b>90<small>%</small></b><span>설문 긍정 응답</span></div></div></div></section>
+
+<section class="sec"><div class="wrap"><div class="problem"><div class="pk">왜 만들었나</div><h2>코치 한 명이 모든 MR을 읽을 수 없었어요.</h2><p>코치가 교육생 MR을 하나하나 확인하고 코멘트를 다는 데 시간이 많이 들었어요. 리뷰가 늦어지면 교육생은 피드백을 기다려야 했고, 인원에 비해 시간이 부족해 사소한 실수까지 짚어주기는 어려웠어요.</p><ol class="flow"><li><b>GitLab</b><span>MR open 이벤트</span></li><li><b>Webhook</b><span>시크릿 토큰 검증</span></li><li><b>diff 조회</b><span>12,000자 초과분 절삭</span></li><li><b>AI Agent</b><span>Groq LLM + Redis 메모리</span></li><li><b>결과</b><span>MR 코멘트 + Mattermost 알림</span></li></ol></div></div></section>
+
+
+
+<section class="sec"><div class="wrap"><h2>제가 한 일.</h2><div class="roles"><article class="role"><h3>설계 판단</h3><ul><li>그룹 웹훅 1개로 저장소 10개를 커버해 관리 지점을 하나로 줄임</li><li>웹훅 URL이 노출돼도 LLM 비용이 새지 않게 시크릿 토큰 검증을 맨 앞에 배치</li><li>diff가 12,000자를 넘으면 잘라서 토큰 비용 폭증을 막음</li><li>자동 리뷰는 MR이 열릴 때 1번만, 이후는 /review 댓글로 다시 요청 — push마다 코멘트가 쌓이는 걸 막으려고 update 이벤트는 일부러 제외</li></ul></article><article class="role"><h3>운영</h3><ul><li>Redis 세션 키를 MR 단위로 잡고 5턴 · 30일 보관 → 재리뷰 때 이전 지적을 참고</li><li>중요한 이슈 2~3개만 대화체로, 끝에는 &#x27;참고용이니 직접 검증하라&#x27;는 문구 고정</li><li>Mattermost 웹훅 URL은 워크플로 JSON이나 git에 넣지 않고 환경변수로만 주입</li></ul></article></div></div></section>
+
+<section class="sec"><div class="wrap"><h2>실제로 이렇게 돌아가요.</h2>
+<p style="margin:0;color:var(--sub);max-width:46em">저장소가 비공개라, 운영 중인 워크플로 파일(<code>n8n-workflow.json</code>)에서 구조와 판단이 담긴 부분만 옮겼어요. 비밀값은 원본에도 자리표시값으로 되어 있어요.</p>
+<div class="ev-grid">
+<article class="ev" style="grid-column:1/-1"><h3>노드 구성 (10개)</h3><p class="src">GitLab 웹훅 하나로 받아서, 코드로 거르고, AI Agent가 리뷰한 뒤 두 곳에 남겨요.</p>
+<div class="wf"><span class="n">GitLab Webhook<small>그룹 웹훅 1개</small></span><span class="ar">→</span><span class="n">Filter &amp; Prepare<small>Code · 토큰·트리거 판별</small></span><span class="ar">→</span><span class="n">Get MR Diff<small>HTTP · GitLab API</small></span><span class="ar">→</span><span class="n">Build Agent Input<small>Code · 12,000자 절삭</small></span><span class="ar">→</span><span class="n ai">AI Agent<small>리뷰 생성</small></span><span class="ar">→</span><span class="n">Parse Review<small>Code</small></span><span class="ar">→</span><span class="n">Post Review Comment<small>MR 코멘트</small></span><span class="ar">→</span><span class="n">Mattermost<small>알림</small></span></div>
+<div class="wf-sub">AI Agent에 서브노드로 연결 → <span class="n">Groq Chat Model · llama-3.3-70b</span><span class="n">Redis Chat Memory · 키 review:{projectId}:{mrIid} · 5턴 · 30일</span></div>
+</article>
+<article class="ev"><h3>언제 리뷰할지 정한 코드</h3><p class="src">Filter &amp; Prepare 노드 발췌</p>
+<pre><span class="k">const</span> CONFIG = {
+  maxDiffChars: 12000,
+  triggerActions: [<span class="k">'open'</span>],  <span class="c">// 처음 열릴 때만 자동 리뷰</span>
+  triggerKeyword: <span class="k">'/review'</span>, <span class="c">// 댓글로 재리뷰</span>
+};
+<span class="c">// 1) 시크릿 토큰부터 검증</span>
+<span class="k">if</span> (headers[<span class="k">'x-gitlab-token'</span>] !== CONFIG.webhookSecret)
+  <span class="k">return</span> [];
+<span class="c">// 2-A) MR 이벤트: open이 아니면 무시</span>
+<span class="k">if</span> (!CONFIG.triggerActions.includes(attrs.action))
+  <span class="k">return</span> [];
+<span class="c">// 2-B) 댓글 이벤트: 정확히 '/review'일 때만</span>
+<span class="k">if</span> (note.trim() !== CONFIG.triggerKeyword)
+  <span class="k">return</span> [];</pre></article>
+<article class="ev"><h3>리뷰 규칙</h3><p class="src">AI Agent 시스템 메시지 발췌</p>
+<pre>정말 중요한 이슈 2~3개만 선별해서 코멘트하세요.
+사소한 트집을 다 나열하지 마세요.
+
+마지막은 다른 팀원도 논의에 참여할 수 있는
+열린 질문 하나로 마무리하세요.
+
+"이 리뷰는 참고용으로 활용하시고 반드시
+직접 검증해 보셔야 합니다!" 문구를 포함하세요.
+
+<span class="c">// 메모리를 쓰는 만큼 넣어 둔 규칙</span>
+이전 답변 기록이 없다면 "이전 리뷰에서" 같은
+표현을 단 한 글자도 지어내지 마세요.</pre></article>
+</div></div></section>
+
+<section class="sec"><div class="wrap"><h2>문제를 다시 본 순간들.</h2><div class="stories"><div class="st-item"><button class="st-btn" aria-expanded="true" aria-controls="st0" id="stb0">메모리 기능이 없는 줄 알았는데<i class="chev"></i></button>
+<div class="st-panel" id="st0" ><div class="step"><span>처음엔</span><p>처음엔 Redis 조회·저장과 &#x27;이전 리뷰 내용&#x27;을 프롬프트에 끼워 넣는 로직을 n8n Code 노드로 직접 짰어요.</p></div><div class="step"><span>알고 보니</span><p>다시 보니 부족한 건 기능이 아니었어요. 대화 기록 관리를 제가 짠 코드가 전부 떠안고 있어서, 고칠 곳이 계속 늘어나는 구조였어요.</p></div><div class="step"><span>바꾼 것</span><p>n8n AI Agent 노드에 Chat Model(Groq)과 Memory(Redis)를 서브노드로 붙여 기록 관리를 맡겼고, 직접 짠 Code 로직을 줄였어요.</p></div><div class="step r"><span>그래서</span><p>같은 구조에 GitLab Discussion API를 Tool로 붙이면 줄 단위 리뷰로도 넓힐 수 있게 됐어요.</p></div></div></div></div></div></section>
+
+<section class="sec"><div class="wrap"><h2>사용한 기술.</h2><div class="stack"><div class="sk"><b>Orchestration</b><div class="chips"><span class="chip">n8n (self-hosted)</span><span class="chip">AI Agent 노드</span></div></div><div class="sk"><b>LLM</b><div class="chips"><span class="chip">Groq</span><span class="chip">llama-3.3-70b-versatile</span></div></div><div class="sk"><b>Memory</b><div class="chips"><span class="chip">Redis Chat Memory</span></div></div><div class="sk"><b>연동</b><div class="chips"><span class="chip">GitLab API</span><span class="chip">Mattermost Webhook</span></div></div></div></div></section>
+
+<section class="sec"><div class="wrap"><div class="pn">
+  <a class="pcard" href="p-awards.html"><span>이전</span><b>‹ 수상</b></a>
+  <a class="pcard r" href="p-ssakit.html"><span>다음</span><b>교보재 신청 통합 플랫폼 ›</b></a>
+</div></div></section>
+<footer class="wrap foot">© 2026 조하원 · <a href="index.html">메인으로</a></footer>
+<script>
+document.querySelectorAll('.st-btn').forEach(b=>b.addEventListener('click',()=>{const open=b.getAttribute('aria-expanded')==='true';b.setAttribute('aria-expanded',String(!open));document.getElementById(b.getAttribute('aria-controls')).hidden=open;}));
+const rail=document.querySelector('.rail');
+document.querySelectorAll('.rn').forEach(b=>b.addEventListener('click',()=>{const s=rail.querySelector('.shot');rail.scrollBy({left:(+b.dataset.dir)*(s?s.getBoundingClientRect().width+20:400),behavior:'smooth'});}));
+const t=document.querySelector('.tab.on');if(t)t.scrollIntoView({inline:'center',block:'nearest'});
+</script>
+</body></html>

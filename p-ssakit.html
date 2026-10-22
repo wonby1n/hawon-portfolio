@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>교보재 신청 통합 플랫폼 — 조하원</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&family=Inter:wght@500;600;700&display=swap">
+<style>:root{--accent:#1d8a5b}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#30d158}}:root[data-theme="dark"]{--accent:#30d158}
+/* Layout: 애플 제품 상세 페이지 흐름 — 상단 탭바, 히어로 카드, 숫자 띠, 문제 패널, 화면 레일, 역할 카드, 진단 아코디언, 스택, 이전/다음 */
+:root{
+  --bg:#ffffff; --panel:#f5f5f7; --card:#ffffff; --fg:#1d1d1f; --sub:#6e6e73; --line:#d2d2d7; --chip:#e8e8ed; --link:#0066cc; --bar:rgba(255,255,255,.78);
+  --f-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --f-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --f-num:"Inter",-apple-system,"SF Pro Display",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--panel:#161617;--card:#1d1d1f;--fg:#f5f5f7;--sub:#a1a1a6;--line:#424245;--chip:#2c2c2e;--link:#2997ff;--bar:rgba(22,22,23,.8);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--panel:#161617;--card:#1d1d1f;--fg:#f5f5f7;--sub:#a1a1a6;--line:#424245;--chip:#2c2c2e;--link:#2997ff;--bar:rgba(22,22,23,.8);color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;word-break:keep-all}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bar)}
+img{max-width:100%;display:block}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);margin:0;letter-spacing:-.02em;text-wrap:balance}
+.sec{padding-block:44px}
+.sec.tight{padding-block:8px 20px}
+.sec h2{font-size:clamp(30px,4.4vw,48px);font-weight:800;line-height:1.12;margin-bottom:28px}
+.more::after{content:" ›"}
+
+/* bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.bar-in{display:flex;align-items:center;gap:20px;height:52px}
+.home{font-weight:700;color:var(--fg);white-space:nowrap;font-size:15px}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1;justify-content:flex-end}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;font-size:13px;padding:6px 12px;border-radius:999px;color:var(--fg)}
+.tab:hover{text-decoration:none;background:var(--chip)}
+.tab.on{background:var(--fg);color:var(--bg)}
+
+/* hero */
+.hero{padding-block:24px 8px}
+.hero-card{background:var(--panel);border-radius:28px;padding:clamp(28px,5vw,64px);display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center}
+.kicker{font-size:14px;font-weight:700;color:var(--accent)}
+.hero h1{font-size:clamp(44px,7vw,80px);font-weight:800;line-height:1.02;margin-top:8px}
+.tagline{font:700 clamp(22px,2.8vw,30px)/1.3 var(--f-display);letter-spacing:-.015em;margin:14px 0 0}
+.summary{margin:18px 0 0;color:var(--sub);max-width:36em}
+.links{margin-top:18px;font-size:16px}
+.note{color:var(--sub);font-size:14px}
+.logo-plate{background:#fff;border-radius:24px;aspect-ratio:4/3;display:grid;place-items:center;padding:12%;box-shadow:0 10px 30px -18px rgba(0,0,0,.35)}
+.logo-plate img{max-height:100%;width:auto;object-fit:contain}
+.glyph{aspect-ratio:4/3;border-radius:24px;background:var(--card);display:flex;align-items:flex-end;justify-content:center;gap:8%;padding:12% 12% 0;overflow:hidden}
+.glyph i{flex:1;border-radius:14px 14px 0 0;background:var(--accent);opacity:calc(.35 + var(--d)*.15);height:calc(40% + var(--d)*12%)}
+.meta{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;border-top:1px solid var(--line);padding-top:24px}
+.m{display:flex;flex-direction:column;gap:2px;min-width:0}
+.m span{font-size:13px;color:var(--sub)}
+.m b{font-size:16px;font-weight:600}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px}
+.st{background:var(--panel);border-radius:22px;padding:22px 24px}
+.st b{display:block;font:700 clamp(34px,4vw,44px)/1 var(--f-num);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--accent)}
+.st b small{font:600 15px var(--f-body);color:var(--sub);margin-left:4px;letter-spacing:0}
+.st span{display:block;margin-top:8px;font-size:14px;color:var(--sub)}
+
+/* problem */
+.problem{background:var(--panel);border-radius:28px;padding:clamp(28px,5vw,64px)}
+.pk{font-size:13px;font-weight:700;color:var(--sub);letter-spacing:.04em;margin-bottom:12px}
+.problem h2{margin-bottom:18px}
+.problem p{margin:0;max-width:40em;font-size:18px;line-height:1.75}
+.flow{list-style:none;margin:32px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:10px;counter-reset:f}
+.flow li{flex:1 1 160px;background:var(--card);border-radius:18px;padding:16px 18px;position:relative;counter-increment:f;min-width:0}
+.flow li::before{content:counter(f);font:700 12px var(--f-num);color:var(--accent);display:block;margin-bottom:6px}
+.flow b{display:block;font-size:16px}
+.flow span{font-size:14px;color:var(--sub)}
+.feats{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.feats span{background:var(--card);border-radius:999px;padding:9px 15px;font-size:14px;font-weight:500}
+
+/* screens */
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:24px}
+.head h2{margin:0}
+.rail-nav{display:flex;gap:12px}
+.rn{width:40px;height:40px;border-radius:50%;border:0;background:var(--chip);color:var(--fg);font-size:20px;cursor:pointer}
+.rail-wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px))}
+.rail{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px max(16px,env(safe-area-inset-right,0px)) 16px 0;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.shot{flex:0 0 min(620px,86%);scroll-snap-align:start;margin:0}
+.shot img{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:22px;background:var(--panel);border:1px solid var(--line)}
+.shot figcaption{margin-top:12px;font-size:15px;font-weight:500}
+
+/* roles */
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.role{background:var(--panel);border-radius:24px;padding:28px;min-width:0}
+.role h3{font-size:22px;font-weight:800;margin-bottom:14px}
+.role ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+.role li{display:flex;gap:10px;font-size:15.5px;line-height:1.6}
+.role li::before{content:"";flex:0 0 6px;height:6px;border-radius:50%;background:var(--accent);margin-top:10px}
+
+/* stories */
+.stories{background:var(--panel);border-radius:28px;padding:8px clamp(20px,4vw,48px)}
+.st-item{border-bottom:1px solid var(--line)}
+.st-item:last-child{border-bottom:0}
+.st-btn{width:100%;background:none;border:0;color:var(--fg);display:flex;justify-content:space-between;align-items:center;gap:16px;padding:26px 0;cursor:pointer;text-align:left;font:800 clamp(20px,2.4vw,26px)/1.3 var(--f-display);letter-spacing:-.02em}
+.chev{flex:0 0 auto;width:13px;height:13px;border-right:2.5px solid var(--sub);border-bottom:2.5px solid var(--sub);transform:rotate(45deg) translate(-3px,-3px);transition:transform .25s}
+.st-btn[aria-expanded="true"] .chev{transform:rotate(-135deg) translate(-3px,-3px)}
+.st-panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;padding-bottom:28px}
+.st-panel[hidden]{display:none}
+.step{background:var(--card);border-radius:18px;padding:18px 20px;min-width:0}
+.step span{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
+.step.r span{color:var(--accent)}
+.step p{margin:0;font-size:15.5px;line-height:1.65}
+
+/* stack */
+.stack{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.sk{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:18px 0;border-bottom:1px solid var(--line);align-items:start}
+.sk b{font-size:15px;padding-top:5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 13px/1 var(--f-num);background:var(--chip);padding:8px 11px;border-radius:999px}
+
+/* prev/next */
+.pn{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pcard{background:var(--panel);border-radius:22px;padding:24px 26px;color:var(--fg);display:flex;flex-direction:column;gap:4px;min-width:0}
+.pcard:hover{text-decoration:none;background:var(--chip)}
+.pcard span{font-size:13px;color:var(--sub)}
+.pcard b{font:800 22px/1.25 var(--f-display);letter-spacing:-.02em}
+.pcard.r{text-align:right}
+.foot{color:var(--sub);font-size:12px;padding-block:24px 48px}
+
+@media (max-width:820px){
+  .hero-card{grid-template-columns:1fr}
+  .meta{grid-template-columns:1fr}
+  .sk{grid-template-columns:1fr;gap:8px}
+}
+@media (max-width:520px){
+  .pn{grid-template-columns:1fr}
+  .pcard.r{text-align:left}
+  .home{font-size:14px}
+  .head .rail-nav{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* evidence */
+.ev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:16px;margin-top:16px}
+.ev{background:var(--panel);border-radius:24px;padding:26px;min-width:0}
+.ev h3{font-size:19px;font-weight:800;margin-bottom:6px}
+.ev .src{font-size:13px;color:var(--sub);margin:0 0 14px}
+.ev pre{margin:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;overflow-x:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+.ev pre .c{color:var(--sub)}
+.ev pre .k{color:var(--accent);font-weight:600}
+.wf{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.wf .n{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:13.5px;line-height:1.35}
+.wf .n small{display:block;color:var(--sub);font-size:11.5px}
+.wf .n.ai{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.wf .ar{color:var(--sub);font-size:14px}
+.wf-sub{display:flex;gap:8px;margin:10px 0 0 0;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+.wf-sub .n{background:var(--card);border:1px dashed var(--accent);border-radius:12px;padding:6px 10px;color:var(--fg)}
+</style></head><body>
+<header class="bar"><div class="wrap bar-in"><a class="home" href="index.html">‹ 조하원</a><nav class="tabs" aria-label="프로젝트"><a class="tab" href="p-review-bot.html">Review Bot</a><a class="tab on" href="p-ssakit.html" aria-current="page">교보재 플랫폼</a><a class="tab" href="p-glucoach.html">GluCoach</a><a class="tab" href="p-care.html">CARe</a><a class="tab" href="p-awards.html">수상</a></nav></div></header>
+
+<section class="hero"><div class="wrap"><div class="hero-card">
+  <div class="hero-txt">
+    <div class="kicker">실습코치 업무 · 교보재 신청 자동화 AX 과제</div>
+    <h1>교보재 신청 통합 플랫폼</h1>
+    <p class="tagline">엑셀로 받던 신청을<br>하나의 서비스로 옮겼어요.</p>
+    <p class="summary">교육생의 교육용 기자재(교보재) 신청부터 승인·지급까지 한 곳에서 처리하고, 과거 신청 사례를 RAG로 검색하는 웹 서비스예요. 교육생이 실제로 쓰는 운영 도구라서 무중단 배포와 보안 경계를 먼저 설계했어요.</p>
+    <div class="links"><span class="note">사내 GitLab에서 운영 중이라 저장소는 비공개예요.</span></div>
+  </div>
+  <div class="glyph" aria-hidden="true"><i style="--d:0"></i><i style="--d:1"></i><i style="--d:2"></i><i style="--d:3"></i><i style="--d:4"></i></div>
+  <div class="meta"><div class="m"><span>형태</span><b>실습코치 업무로 직접 구축</b></div><div class="m"><span>대상</span><b>기수당 300명 미만</b></div><div class="m"><span>서버</span><b>단일 서버 · Docker Compose</b></div></div>
+</div></div></section>
+
+<section class="sec tight"><div class="wrap"><div class="stats"><div class="st"><b>1,723<small>건</small></b><span>분석한 기존 재고</span></div><div class="st"><b>9.7<small>%</small></b><span>구매 링크 보유율</span></div><div class="st"><b>7.9<small>%</small></b><span>가격 정보 보유율</span></div><div class="st"><b>80·443<small></small></b><span>외부 공개 포트</span></div></div></div></section>
+
+<section class="sec"><div class="wrap"><div class="problem"><div class="pk">왜 만들었나</div><h2>가격 자동 조회부터 만들려고 했어요.</h2><p>처음엔 교보재 가격을 자동으로 찾아주는 기능을 우선 후보로 봤어요. 그런데 기존 재고 1,723건을 분석해 보니 구매 링크가 있는 건 9.7%, 가격 정보가 있는 건 7.9%뿐이었어요. 조회할 원천 정보가 대부분 비어 있었던 거예요. 그래서 우선순위를 신청·승인 절차를 한 곳으로 모으는 쪽으로 바꿨어요.</p><ol class="flow"><li><b>React</b><span>화면</span></li><li><b>Spring Boot</b><span>인증 · 권한 · 입력 검증</span></li><li><b>FastAPI</b><span>RAG 추론 전용 · 내부망</span></li><li><b>Vector Store / LLM</b><span>근거 사례 ID와 함께 응답</span></li></ol></div></div></section>
+
+
+
+<section class="sec"><div class="wrap"><h2>제가 한 일.</h2><div class="roles"><article class="role"><h3>배포</h3><ul><li>master 병합 시 Jenkins가 대기 색상 스택을 빌드 → Trivy 보안 스캔 → 기동 → 헬스체크 → nginx 트래픽 전환</li><li>HIGH·CRITICAL 취약점이 나오거나 헬스체크가 실패하면 전환하지 않음</li><li>배포 후 5분간 로그에서 error · exception · fatal 패턴을 찾아 Mattermost 알림에 포함</li></ul></article><article class="role"><h3>보안 경계</h3><ul><li>외부 공개 포트는 80·443만, 나머지 컨테이너 포트는 전부 127.0.0.1 바인딩</li><li>AI 컨테이너는 외부 포트 없이 backend 내부망에만 둠 — 프론트가 FastAPI를 직접 못 부름</li><li>SSAFY OAuth: state 검증, 로그인 후 세션 ID 재발급, HttpOnly · Secure · SameSite=Lax 쿠키</li><li>Client Secret은 Jenkins Credential · 환경변수로만 주입</li></ul></article><article class="role"><h3>운영 · 협업</h3><ul><li>모든 요청에 Request ID, 상태·재고·권한 변경엔 감사 로그 (토큰·개인정보는 로그 미기록)</li><li>Uptime Kuma로 엔드포인트 감시 + Mattermost 알림, 장애 대응 RUNBOOK 작성</li><li>CONTRIBUTING.md로 브랜치 · 커밋 · MR 규칙 정리, 인프라 · CI/CD · RAG 흐름 다이어그램 3종</li><li>아키텍처 문서에 &#x27;미확정 결정 사항&#x27; 표를 따로 두고 관리</li></ul></article></div></div></section>
+
+<section class="sec"><div class="wrap"><h2>실제로 이렇게 돌아가요.</h2>
+<p style="margin:0;color:var(--sub);max-width:46em">사내 GitLab 저장소라 비공개예요. 저장소의 실제 설정 파일에서 판단이 담긴 부분만 옮겼어요.</p>
+<div class="ev-grid">
+<article class="ev"><h3>포트는 안 열고, 컨테이너 안에서 확인</h3><p class="src">Jenkinsfile · Health Check 단계 발췌</p>
+<pre><span class="c"># 서비스 포트는 보안상 127.0.0.1에만 바인딩
+# → Jenkins 컨테이너 밖에서는 닿지 않으므로
+#   각 컨테이너 안에서 직접 호출</span>
+compose exec -T backend curl --fail \
+  http://127.0.0.1:8080/api/health || {
+  echo <span class="k">'Backend health check failed'</span>
+  compose logs --tail=50; exit 1; }
+
+compose exec -T ai python -c \
+  <span class="k">"urllib.request.urlopen(
+   'http://127.0.0.1:8000/health', timeout=2)"</span></pre></article>
+<article class="ev"><h3>외부에 열린 건 80·443뿐</h3><p class="src">docker-compose.yml 발췌</p>
+<pre>backend:
+  ports:
+    - <span class="k">"127.0.0.1:${BACKEND_PORT:-8080}:8080"</span>
+frontend:
+  ports:
+    - <span class="k">"127.0.0.1:${FRONTEND_PORT:-3000}:8080"</span>
+ai:
+  <span class="c"># 외부 포트 없음 · backend 내부망에서만 호출</span>
+  healthcheck:
+    test: [<span class="k">"CMD"</span>, <span class="k">"python"</span>, <span class="k">"-c"</span>, <span class="k">"... /health"</span>]</pre></article>
+<article class="ev" style="grid-column:1/-1"><h3>제가 만든 범위</h3><p class="src">저장소 커밋 기록 기준</p>
+<div class="wf"><span class="n">FastAPI RAG 서버 (ai/)<small>커밋 전부 본인</small></span><span class="n">React 프론트엔드<small>커밋 전부 본인</small></span><span class="n">Jenkins · 인프라<small>대부분 본인</small></span><span class="n">Spring Boot 백엔드<small>대부분 본인 · 다른 실습코치 일부 참여</small></span></div>
+</article>
+</div></div></section>
+
+<section class="sec"><div class="wrap"><h2>문제를 다시 본 순간들.</h2><div class="stories"><div class="st-item"><button class="st-btn" aria-expanded="true" aria-controls="st0" id="stb0">헬스체크만 계속 실패했던 이유<i class="chev"></i></button>
+<div class="st-panel" id="st0" ><div class="step"><span>처음엔</span><p>Jenkins 파이프라인이 컨테이너 기동까지는 통과하는데 헬스체크 단계에서만 실패했어요. 처음엔 포트나 방화벽 문제라고 생각했어요.</p></div><div class="step"><span>알고 보니</span><p>Jenkins도 컨테이너로 돌고 있었어요. Jenkins 안에서 부른 127.0.0.1은 배포 서버가 아니라 Jenkins 컨테이너 자기 자신이었어요.</p></div><div class="step"><span>바꾼 것</span><p>헬스체크를 docker compose exec로 각 컨테이너 안에서 호출하도록 바꿨고, 보안을 위한 127.0.0.1 바인딩은 그대로 유지했어요.</p></div><div class="step r"><span>그래서</span><p>포트를 더 열지 않고도 배포 파이프라인이 끝까지 돌게 됐어요.</p></div></div></div><div class="st-item"><button class="st-btn" aria-expanded="false" aria-controls="st1" id="stb1">Jenkins가 빌드를 못 하던 날<i class="chev"></i></button>
+<div class="st-panel" id="st1" hidden><div class="step"><span>처음엔</span><p>docker compose build가 &#x27;requires buildx&#x27; 오류로 멈췄어요.</p></div><div class="step"><span>알고 보니</span><p>Jenkins 기본 이미지에 compose와 buildx가 들어 있지 않았어요.</p></div><div class="step"><span>바꾼 것</span><p>Jenkins용 Dockerfile을 따로 만들어 둘을 설치했고, http로 박혀 있던 Jenkins URL도 https로 고쳤어요.</p></div><div class="step r"><span>그래서</span><p>같은 날 빌드가 SUCCESS로 돌아왔어요.</p></div></div></div></div></div></section>
+
+<section class="sec"><div class="wrap"><h2>사용한 기술.</h2><div class="stack"><div class="sk"><b>Backend</b><div class="chips"><span class="chip">Spring Boot 4</span><span class="chip">Java 21</span></div></div><div class="sk"><b>Frontend</b><div class="chips"><span class="chip">React</span><span class="chip">Vite</span><span class="chip">TypeScript</span></div></div><div class="sk"><b>AI</b><div class="chips"><span class="chip">FastAPI</span><span class="chip">RAG</span></div></div><div class="sk"><b>Data</b><div class="chips"><span class="chip">PostgreSQL</span><span class="chip">Redis</span></div></div><div class="sk"><b>Infra</b><div class="chips"><span class="chip">Docker Compose</span><span class="chip">nginx</span><span class="chip">Jenkins</span><span class="chip">Trivy</span><span class="chip">Uptime Kuma</span></div></div></div></div></section>
+
+<section class="sec"><div class="wrap"><div class="pn">
+  <a class="pcard" href="p-review-bot.html"><span>이전</span><b>‹ 코드 리뷰 봇</b></a>
+  <a class="pcard r" href="p-glucoach.html"><span>다음</span><b>GluCoach ›</b></a>
+</div></div></section>
+<footer class="wrap foot">© 2026 조하원 · <a href="index.html">메인으로</a></footer>
+<script>
+document.querySelectorAll('.st-btn').forEach(b=>b.addEventListener('click',()=>{const open=b.getAttribute('aria-expanded')==='true';b.setAttribute('aria-expanded',String(!open));document.getElementById(b.getAttribute('aria-controls')).hidden=open;}));
+const rail=document.querySelector('.rail');
+document.querySelectorAll('.rn').forEach(b=>b.addEventListener('click',()=>{const s=rail.querySelector('.shot');rail.scrollBy({left:(+b.dataset.dir)*(s?s.getBoundingClientRect().width+20:400),behavior:'smooth'});}));
+const t=document.querySelector('.tab.on');if(t)t.scrollIntoView({inline:'center',block:'nearest'});
+</script>
+</body></html>
